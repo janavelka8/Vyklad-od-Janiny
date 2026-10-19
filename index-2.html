@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d2219">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tarot">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Tarot světla a stínu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d2219;--panel:#16382a;--ink:#f2e9d4;--muted:#a9bfae;--light:#7fd08a;--shadow:#e0566a;--line:#2f5d47;--gold:#d8b45a}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:radial-gradient(circle at 50% 0,#184230,var(--bg) 70%) fixed;color:var(--ink);font-family:Jost,system-ui,sans-serif;line-height:1.55}
+#mandala{position:fixed;left:50%;top:50%;width:min(130vw,980px);aspect-ratio:1;transform:translate(-50%,-50%);opacity:.22;pointer-events:none;z-index:0}
+#mandala svg{width:100%;height:100%;animation:spin 300s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#mandala svg{animation:none}}
+main{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:28px 18px 60px}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:2.7rem;line-height:1.05;margin:0 0 6px;font-weight:700}
+h1 .l{color:var(--light)}h1 .s{color:var(--shadow)}
+.sub{color:var(--muted);margin:0 0 22px}
+label{display:block;font-weight:500;margin:20px 0 6px}
+textarea,select,input[type=text]{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit}
+textarea{min-height:84px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.spreads{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sp{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;cursor:pointer}
+.sp small{color:var(--muted)}
+.sp[aria-pressed=true]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:1 1 200px}
+.seg button{flex:1;border:0;background:var(--panel);color:var(--muted);padding:11px 8px;font:inherit;cursor:pointer}
+.seg button[aria-pressed=true].up{background:var(--light);color:#0b2a14}
+.seg button[aria-pressed=true].rev{background:var(--shadow);color:#fff}
+.btn{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:500;cursor:pointer;background:var(--gold);color:#1a1300}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+ul.cards{list-style:none;padding:0;margin:14px 0 0}
+ul.cards li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel)}
+ul.cards small{color:var(--muted)}
+.x{background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.empty{color:var(--muted);font-style:italic;margin-top:12px}
+#out{margin-top:34px}
+.q{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:1.4rem;border-left:3px solid var(--gold);padding-left:14px;margin:0 0 22px;white-space:pre-wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h3{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.6rem;margin:0 0 2px}
+.pos{color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.asp{padding:9px 12px;border-radius:9px;margin-top:8px;font-size:.97rem}
+.asp b{display:block;font-size:.85rem;margin-bottom:2px}
+.asp.l{border-left:4px solid var(--light)}.asp.s{border-left:4px solid var(--shadow)}
+.asp.lead{background:rgba(255,255,255,.08)}
+.asp:not(.lead){opacity:.62}
+.sum{border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:22px;background:linear-gradient(100deg,rgba(127,208,138,.16),rgba(224,86,106,.18))}
+.sum h2{font-family:"Cormorant Garamond",Georgia,serif;margin:0 0 8px;font-size:1.8rem}
+.sum h3{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.35rem;margin:20px 0 4px;color:var(--gold)}
+.sum p{margin:0 0 9px}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:10px 0 6px}
+.bar i{display:block}
+.note{color:var(--muted);font-size:.88rem;margin-top:16px}
+</style>
+</head>
+<body>
+<div id="mandala" aria-hidden="true"></div>
+<main>
+<h1><span class="l">Světlo</span> a <span class="s">stín</span></h1>
+<p class="sub">Vyber výklad, napiš otázku, vlož karty, které padly, a přečti si, co říkají.</p>
+
+<label>Typ výkladu</label>
+<div class="spreads" id="spreads"></div>
+
+<label for="q">Otázka</label>
+<textarea id="q" placeholder="Na co se tazatel ptá?"></textarea>
+
+<label for="card" id="nextlbl">Karta, která padla</label>
+<select id="card"></select>
+
+<div class="row" style="margin-top:8px">
+  <div class="seg" role="group" aria-label="Poloha karty">
+    <button type="button" class="up" id="up" aria-pressed="true">Vzpřímená</button>
+    <button type="button" class="rev" id="rev" aria-pressed="false">Obrácená</button>
+  </div>
+  <input type="text" id="pos" placeholder="Pozice (volitelně)" aria-label="Pozice karty">
+</div>
+<div class="row" style="margin-top:10px">
+  <button class="btn" id="add" type="button">Přidat kartu</button>
+</div>
+
+<ul class="cards" id="list"></ul>
+<p class="empty" id="empty">Zatím žádné karty.</p>
+
+<div class="row" style="margin-top:18px">
+  <button class="btn" id="go" type="button">Zeptat se karet</button>
+  <button class="btn ghost" id="reset" type="button">Začít znovu</button>
+</div>
+
+<section id="out" aria-live="polite"></section>
+</main>
+
+<script>
+const MAJOR=[
+["Blázen","nový začátek, důvěra, spontánnost","lehkomyslnost, riskování naslepo"],
+["Mág","vůle, schopnosti, tvoření","manipulace, rozptýlená síla"],
+["Velekněžka","intuice, tajemství, vnitřní hlas","zadržování, potlačená intuice, skrytost"],
+["Císařovna","plodnost, péče, hojnost","přehnaná péče, závislost, tvůrčí blok"],
+["Císař","řád, struktura, ochrana","rigidita, kontrola, panovačnost"],
+["Velekněz","tradice, učení, moudrost","dogma, konformita, slepé následování"],
+["Zamilovaní","láska, soulad, vědomá volba","rozpolcenost, nevěrnost sobě, odkládání volby"],
+["Vůz","vítězství, disciplína, směr","ztráta směru, agrese, nátlak"],
+["Síla","odvaha, soucit, jemná moc","pochyby o sobě, potlačený hněv"],
+["Poustevník","hledání, vnitřní světlo, moudrost","izolace, osamělost, útěk před světem"],
+["Kolo štěstí","cykly, příležitost, osud","odpor ke změně, pocit smůly"],
+["Spravedlnost","pravda, odpovědnost, vyváženost","nečestnost, vyhýbání se následkům"],
+["Viselec","pauza, jiný pohled, odevzdání","zbytečná oběť, zaseknutí, odpor"],
+["Smrt","konec, proměna, uvolnění","strach ze změny, lpění na starém"],
+["Mírnost","soulad, trpělivost, uzdravení","nevyváženost, extrémy, netrpělivost"],
+["Ďábel","vášeň, uvědomění vlastních pout, stín","závislost, otroctví, manipulace"],
+["Věž","prozření, zhroucení iluzí, osvobození","odpor ke krizi, odkládaný pád"],
+["Hvězda","naděje, obnova, klid","ztráta víry, vyčerpání, odpojenost"],
+["Měsíc","sny, intuice, nevědomí","strach, iluze, zmatek"],
+["Slunce","radost, vitalita, jasnost","přehnaný optimismus, dočasné zakalení"],
+["Soud","probuzení, povolání, odpuštění","přísná sebekritika, ignorování volání"],
+["Svět","završení, celistvost, integrace","nedokončenost, chybí poslední krok"]
+];
+const RANKS=[
+["Eso","nový začátek, dar, semínko","zmeškaná šance, nevyužitý potenciál"],
+["Dvojka","volba, rovnováha, partnerství","váhání, rozdělenost"],
+["Trojka","růst, spolupráce, první plody","rozptýlení, nesoulad ve spolupráci"],
+["Čtyřka","stabilita, odpočinek, základ","strnulost, nuda, uzavřenost"],
+["Pětka","střet, zkouška, změna","ztráta, soupeření, zranění"],
+["Šestka","harmonie, pomoc, přechod","nerovnováha, závislost, ulpívání"],
+["Sedmička","vytrvalost, zhodnocení, vize","pochybnosti, útěk, iluze"],
+["Osmička","pohyb, píle, mistrovství","spěch, přepínání, zaseknutí"],
+["Devítka","téměř cíl, odolnost, sebedůvěra","úzkost, izolace, vyčerpání"],
+["Desítka","završení, plnost, dědictví","přetížení, břemeno, přehnaný konec"],
+["Páže","zvědavost, zpráva, učení se","nezralost, povrchnost"],
+["Rytíř","odvaha, vyhraněný postup","přehnanost, neklid, jednostrannost"],
+["Královna","zralá intuice, péče, vnitřní vláda","stažení se, manipulace, vyčerpané dávání"],
+["Král","autorita, mistrovství, odpovědnost","kontrola, tvrdost, zneužití moci"]
+];
+const SUITS=[
+["holí","Hole","činy, vášeň a tvůrčí oheň"],
+["pohárů","Poháry","city, vztahy a vnitřní svět"],
+["mečů","Meče","myšlenky, pravda a rozhodování"],
+["pentaklů","Pentakly","práce, tělo, peníze a hmotný svět"]
+];
+
+const DECK=[];
+MAJOR.forEach((c,i)=>DECK.push({name:c[0],l:c[1],s:c[2],suit:null}));
+SUITS.forEach((s,si)=>RANKS.forEach(r=>DECK.push({name:r[0]+" "+s[0],l:r[1],s:r[2],suit:si,theme:s[2]})));
+
+const $=id=>document.getElementById(id);
+const sel=$("card");
+function fillSelect(){
+  const groups=[["Velká arkána",DECK.slice(0,22)]];
+  SUITS.forEach((s,si)=>groups.push([s[1],DECK.filter(c=>c.suit===si)]));
+  groups.forEach(g=>{
+    const og=document.createElement("optgroup");og.label=g[0];
+    g[1].forEach(c=>{const o=document.createElement("option");o.value=DECK.indexOf(c);o.textContent=c.name;og.appendChild(o)});
+    sel.appendChild(og);
+  });
+}
+fillSelect();
+
+const SPREADS={
+ daily:{n:"Denní karta",d:"1 karta na dnešek",pos:["Karta dne"]},
+ three:{n:"Minulost, přítomnost, budoucnost",d:"3 karty",pos:["Minulost","Přítomnost","Budoucnost"]},
+ cross:{n:"Křížový výklad",d:"5 karet do kříže",pos:["Střed","Vlevo: co odchází","Vpravo: co přichází","Nahoře: vědomý cíl","Dole: kořeny a nevědomí"]},
+ ten:{n:"Celkový výklad",d:"10 karet, keltský kříž",pos:["1. Současná situace","2. Co ji kříží","3. Základ","4. Nedávná minulost","5. Vědomý cíl","6. Blízká budoucnost","7. Postoj tazatele","8. Okolí a vlivy","9. Naděje a obavy","10. Výsledek"]},
+ free:{n:"Volný výklad",d:"libovolný počet karet",pos:null}
+};
+let spread="three",reversed=false,picked=[];
+function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+const SP=()=>SPREADS[spread];
+const maxN=()=>SP().pos?SP().pos.length:78;
+const posOf=i=>SP().pos?SP().pos[i]:(picked[i].pos||"Karta "+(i+1));
+const J=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" a "+a[a.length-1];
+const cz=n=>n===1?"karta":n<5?"karty":"karet";
+
+function setOri(r){reversed=r;$("up").setAttribute("aria-pressed",!r);$("rev").setAttribute("aria-pressed",r)}
+$("up").onclick=()=>setOri(false);
+$("rev").onclick=()=>setOri(true);
+
+function renderSpreads(){
+  const w=$("spreads");w.innerHTML="";
+  Object.keys(SPREADS).forEach(k=>{
+    const b=mk("button","sp");b.type="button";b.setAttribute("aria-pressed",k===spread);
+    b.appendChild(mk("strong","",SPREADS[k].n));b.appendChild(mk("small","",SPREADS[k].d));
+    b.onclick=()=>{spread=k;picked=picked.slice(0,maxN());$("out").innerHTML="";renderSpreads();renderList()};
+    w.appendChild(b);
+  });
+}
+function renderList(){
+  const ul=$("list");ul.innerHTML="";
+  picked.forEach((p,i)=>{
+    const li=mk("li");const t=mk("span","",(i+1)+". "+DECK[p.i].name+" ");
+    t.appendChild(mk("small","","("+(p.rev?"obrácená":"vzpřímená")+", "+posOf(i)+")"));
+    const x=mk("button","x","×");x.type="button";x.setAttribute("aria-label","Odebrat kartu");
+    x.onclick=()=>{picked.splice(i,1);renderList()};
+    li.append(t,x);ul.appendChild(li);
+  });
+  const full=picked.length>=maxN();
+  $("add").disabled=full;
+  $("pos").style.display=SP().pos?"none":"";
+  $("nextlbl").textContent=full?"Výklad je kompletní":(SP().pos?"Karta "+(picked.length+1)+" z "+maxN()+": "+SP().pos[picked.length]:"Karta, která padla");
+  $("empty").style.display=picked.length?"none":"block";
+}
+$("add").onclick=()=>{
+  if(picked.length>=maxN())return;
+  const i=+sel.value;
+  if(picked.some(p=>p.i===i)&&!confirm("Tato karta už je přidaná. Přidat znovu?"))return;
+  picked.push({i,rev:reversed,pos:$("pos").value.trim()});
+  $("pos").value="";renderList();
+};
+$("reset").onclick=()=>{picked=[];$("q").value="";$("out").innerHTML="";renderList();setOri(false)};
+
+function aspect(kind,card,lead){
+  const d=mk("div","asp "+kind+(lead?" lead":""));
+  d.appendChild(mk("b","",kind==="l"?"Světlo":"Stín"));
+  d.appendChild(mk("span","",kind==="l"?card.l:card.s));
+  return d;
+}
+
+$("go").onclick=()=>{
+  const out=$("out");out.innerHTML="";
+  if(!picked.length){out.appendChild(mk("p","empty","Nejdřív přidej alespoň jednu kartu."));return}
+  if(SP().pos&&picked.length<maxN()){const m=maxN()-picked.length;out.appendChild(mk("p","empty","Pro tento výklad chybí ještě "+m+" "+cz(m)+"."));return}
+  const q=$("q").value.trim();
+  if(q)out.appendChild(mk("p","q",q));
+  const tot=picked.length;
+  const it=picked.map((p,i)=>{
+    const c=DECK[p.i];
+    return{c,rev:p.rev,pos:posOf(i),n:c.name+(p.rev?" (obrácená)":""),idx:p.i,
+      lead:(p.rev?c.s:c.l).split(", "),other:(p.rev?c.l:c.s).split(", ")};
+  });
+  const sh=x=>x.pos.replace(/^\d+\.\s*/,"").split(":")[0];
+  const q1=s=>"„"+s+"“";
+  const k=i=>q1(it[i].lead[0]);
+  const o=i=>it[i].rev?"stín":"světlo";
+
+  it.forEach(x=>{
+    const box=mk("div","card");
+    box.appendChild(mk("h3","",x.n));
+    box.appendChild(mk("div","pos",x.pos+(x.c.suit!==null?" · "+SUITS[x.c.suit][1]:" · Velká arkána")));
+    box.appendChild(aspect(x.rev?"s":"l",x.c,true));
+    box.appendChild(aspect(x.rev?"l":"s",x.c,false));
+    if(x.c.suit!==null)box.appendChild(mk("div","pos","Téma: "+x.c.theme+"."));
+    out.appendChild(box);
+  });
+
+  const nl=it.filter(x=>!x.rev).length,ns=tot-nl;
+  const sum=mk("div","sum");
+  sum.appendChild(mk("h2","","Souhrn"));
+  const bar=mk("div","bar");
+  const bl=mk("i");bl.style.cssText="width:"+(nl/tot*100)+"%;background:var(--light)";
+  const bs=mk("i");bs.style.cssText="width:"+(ns/tot*100)+"%;background:var(--shadow)";
+  bar.append(bl,bs);sum.appendChild(bar);
+  const sec=(t,x)=>{if(!x||(Array.isArray(x)&&!x.length))return;sum.appendChild(mk("h3","",t));(Array.isArray(x)?x:[x]).forEach(s=>sum.appendChild(mk("p","",s)))};
+
+  // 1 celkový obraz
+  let t1;
+  if(tot===1)t1=ns?"Karta se ukazuje ve stínu: mluví o tom, co je skryté nebo ztížené.":"Karta se ukazuje ve světle: mluví o tom, co nese a podporuje.";
+  else if(nl===tot)t1="Všechny karty se ukazují ve světle ("+tot+" z "+tot+"). Situace nese dar a podporu.";
+  else if(ns===tot)t1="Všechny karty se ukazují ve stínu ("+tot+" z "+tot+"). To není špatné znamení, ale pozvání podívat se na to, co je skryté, odpírané nebo nevyslovené.";
+  else if(nl>ns)t1="Převládá světlo ("+nl+" z "+tot+"), stín se ale ozývá ("+ns+").";
+  else if(ns>nl)t1="Převládá stín ("+ns+" z "+tot+"), světlo ale zůstává na dosah ("+nl+").";
+  else t1="Světlo a stín jsou v rovnováze ("+nl+" : "+ns+").";
+  const ln=it.filter(x=>!x.rev).map(x=>x.c.name),sn=it.filter(x=>x.rev).map(x=>x.c.name);
+  const bal=[t1];
+  if(ln.length&&tot>1)bal.push("Ve světle stojí: "+J(ln)+".");
+  if(sn.length&&tot>1)bal.push("Ve stínu stojí: "+J(sn)+".");
+  sec("Celkový obraz",bal.join(" "));
+
+  // 2 příběh výkladu
+  const st=[];
+  if(spread==="daily"){
+    st.push("Karta dne, "+it[0].n+", říká: "+J(it[0].lead)+".");
+    st.push("Opři se o "+q1(it[0].c.l.split(", ")[0])+" a hlídej "+q1(it[0].c.s.split(", ")[0])+".");
+  }else if(spread==="three"){
+    st.push("Minulost nese "+k(0)+" ("+it[0].c.name+"), přítomnost "+k(1)+" ("+it[1].c.name+") a budoucnost "+k(2)+" ("+it[2].c.name+").");
+    const same=o(0)===o(1)&&o(1)===o(2);
+    st.push("Vývoj polohy: "+o(0)+" → "+o(1)+" → "+o(2)+". "+(same?"Celý oblouk je veden stejnou polohou ("+o(0)+"), takže jde o jednolitý vzorec.":o(0)===o(2)?"Přítomnost tvoří zlom proti začátku i konci příběhu.":o(2)==="světlo"?"Příběh míří ze stínu ke světlu: budoucnost nese to, co minulost a přítomnost zatím zadržely.":"Příběh míří ze světla do stínu: budoucnost ukazuje, co hrozí přehlédnout, pokud se nezmění směr."));
+  }else if(spread==="cross"){
+    st.push("Střed výkladu tvoří "+it[0].n+": "+J(it[0].lead)+".");
+    st.push("Co odchází: "+k(1)+" ("+it[1].c.name+"). Co přichází: "+k(2)+" ("+it[2].c.name+").");
+    st.push("Vědomě míříš k "+k(3)+" ("+it[3].c.name+"), ale kořeny leží v "+k(4)+" ("+it[4].c.name+"). "+(o(3)===o(4)?"Cíl i kořeny stojí ve stejné poloze, takže jdou jedním směrem.":"Cíl a kořeny stojí v opačné poloze, takže mezi tím, co chceš, a tím, z čeho vycházíš, je napětí."));
+  }else if(spread==="ten"){
+    st.push("Jádro: situaci ("+it[0].n+": "+J(it[0].lead.slice(0,2))+") kříží "+it[1].n+": "+J(it[1].lead.slice(0,2))+".");
+    st.push("Základ stojí na "+it[2].c.name+" ("+k(2)+"), nedávná minulost nese "+it[3].c.name+" ("+k(3)+"). Vědomě míříš k "+it[4].c.name+" ("+k(4)+") a blízká budoucnost přináší "+it[5].c.name+" ("+k(5)+").");
+    st.push("Tvůj postoj: "+it[6].c.name+" ("+k(6)+"). Okolí: "+it[7].c.name+" ("+k(7)+"). Naděje a obavy se sbíhají v kartě "+it[8].c.name+" ("+k(8)+"), vedené "+(o(8)==="stín"?"stínem, takže obavy zde zatím přebíjejí naději.":"světlem, takže naděje zde přebíjí obavy."));
+    st.push("Výsledek: "+it[9].n+" – "+J(it[9].lead)+". "+(o(9)==="světlo"?"Výsledek je veden světlem.":"Výsledek je veden stínem, proto je to spíš výzva k práci než hotové řešení; jeho světlo je "+J(it[9].other.slice(0,2))+"."));
+  }else{
+    st.push("Karty po sobě: "+it.map(x=>x.c.name+" ("+q1(x.lead[0])+")").join(" → ")+".");
+  }
+  sec("Příběh výkladu",st);
+
+  // 3 hlavní témata
+  const th=[];
+  const maj=it.filter(x=>x.c.suit===null);
+  if(maj.length)th.push(maj.length+" z "+tot+" karet patří do Velké arkány"+(maj.length*2>=tot?", takže jde spíš o větší životní téma než o drobnost":"")+". Nejsilnější váhu mají: "+J(maj.map(x=>x.c.name))+".");
+  const sc=[0,0,0,0];it.forEach(x=>{if(x.c.suit!==null)sc[x.c.suit]++});
+  const mx=Math.max(...sc);
+  if(mx>=2){const ids=sc.map((v,i)=>v===mx?i:-1).filter(i=>i>=0);th.push("Nejčastěji se opakuje barva "+J(ids.map(i=>SUITS[i][1]))+" ("+mx+"×): "+J(ids.map(i=>SUITS[i][2]))+".")}
+  if(tot>=5){const miss=sc.map((v,i)=>v===0?i:-1).filter(i=>i>=0);if(miss.length&&miss.length<4)th.push("Žádná karta nepatří do barvy "+J(miss.map(i=>SUITS[i][1]))+", takže "+J(miss.map(i=>SUITS[i][2]))+" zůstává ve výkladu stranou.")}
+  const ri=x=>x.idx>=22?(x.idx-22)%14:-1;
+  const courts=it.filter(x=>ri(x)>=10);
+  if(courts.length)th.push("Dvorní karty ("+J(courts.map(x=>x.c.name))+") představují lidi nebo role v příběhu, případně části tazatele samého.");
+  const rc={};it.forEach(x=>{const r=ri(x);if(r>=0)rc[r]=(rc[r]||0)+1});
+  Object.keys(rc).filter(r=>rc[r]>=2).forEach(r=>th.push("Opakuje se hodnota "+q1(RANKS[r][0])+" ("+rc[r]+"×): ve světle "+RANKS[r][1]+", ve stínu "+RANKS[r][2]+". Stejný motiv se vrací v různých oblastech."));
+  sec("Hlavní témata",th);
+
+  // 4 opora a pozornost
+  const op=[];
+  const li2=it.filter(x=>!x.rev),sh2=it.filter(x=>x.rev);
+  if(li2.length)op.push("Opora: "+li2.map(x=>x.c.name+" ("+sh(x)+"): "+J(x.lead.slice(0,2))).join("; ")+".");
+  if(sh2.length)op.push("Pozornost: "+sh2.map(x=>x.c.name+" ("+sh(x)+"): "+J(x.lead.slice(0,2))+", cesta ven: "+J(x.other.slice(0,2))).join("; ")+".");
+  sec("Opora a pozornost",op);
+
+  // 5 otázky
+  const qs=[];
+  sh2.slice(0,3).forEach(x=>qs.push(x.c.name+": kde se ve tvé situaci projevuje "+q1(x.lead[0])+" a co by změnilo "+q1(x.other[0])+"?"));
+  if(qs.length<3)li2.slice(0,3-qs.length).forEach(x=>qs.push(x.c.name+": kde ve tvé situaci už působí "+q1(x.lead[0])+" a jak ho můžeš posílit?"));
+  sec("Otázky k zamyšlení",qs);
+
+  sum.appendChild(mk("p","note","Souhrn vychází jen z významů vyložených karet a jejich polohy. Rozhodnutí zůstává na tazateli."));
+  const cp=mk("button","btn ghost","Zkopírovat výklad");cp.type="button";
+  cp.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(out.innerText).then(()=>{cp.textContent="Zkopírováno"})};
+  sum.appendChild(cp);
+  out.appendChild(sum);
+  sum.scrollIntoView({behavior:"smooth",block:"nearest"});
+};
+
+(function(){
+  let s='<svg viewBox="-200 -200 400 400" fill="none" stroke-width="1.2">';
+  for(let r=60;r<=190;r+=26)s+='<circle r="'+r+'" stroke="#d8b45a" stroke-dasharray="2 5"/>';
+  for(let i=0;i<16;i++){
+    const a=i*22.5,g=i%2?"#e0566a":"#7fd08a",h=i%2?"#7fd08a":"#e0566a";
+    s+='<g transform="rotate('+a+')"><path d="M0 -30C18 -70 18 -110 0 -140C-18 -110 -18 -70 0 -30Z" stroke="'+g+'"/><path d="M0 -150C12 -165 12 -180 0 -192C-12 -180 -12 -165 0 -150Z" stroke="'+h+'"/><circle cy="-146" r="3" stroke="#d8b45a"/></g>';
+  }
+  for(let i=0;i<8;i++)s+='<ellipse rx="10" ry="34" cy="-18" transform="rotate('+(i*45)+')" stroke="#d8b45a"/>';
+  $("mandala").innerHTML=s+'</svg>';
+})();
+renderSpreads();renderList();
+</script>
+</body>
+</html>
